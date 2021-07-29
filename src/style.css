@@ -76,6 +76,7 @@
 
 .product {
   border: none;
+  cursor: pointer;
 }
 
 .product img {

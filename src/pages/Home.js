@@ -1,11 +1,92 @@
-import React, { useState } from "react";
+import React, { forwardRef, useEffect, useState } from "react";
 import "react-responsive-carousel/lib/styles/carousel.min.css"; // requires a loader
 import { Carousel } from "react-responsive-carousel";
 import Product from "../components/Product";
 import CartProduct from "../components/CartProduct";
 import { Link } from "react-router-dom";
+import axios from "axios";
+import { URL, KEY } from "../config/db";
+import ProductSkeleton from "../components/ProductSkeleton";
+import FlipMove from "react-flip-move";
 function Home() {
   const [isBayar, setIsBayar] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [listProduct, setListProduct] = useState([]);
+  const [listCart, setListCart] = useState([]);
+
+  const FunctionalCart = forwardRef((data, ref) => (
+    <div ref={ref}>
+      <CartProduct
+        key={data.id}
+        src={data.picture}
+        name={data.name}
+        price={data.price}
+        qty={data.qty}
+        updateQtyCart={updateQtyCart}
+        data={data}
+      />
+    </div>
+  ));
+
+  useEffect(() => {
+    async function fetchMyAPI() {
+      let res = await axios.get(URL + `allProduct/rows`, {
+        headers: {
+          "content-type": "application/json",
+          "x-api-key": KEY,
+          "cache-control": "no-cache",
+        },
+      });
+
+      if (res.status === 200) {
+        setListProduct(res.data.nodes);
+        setIsLoading(false);
+      }
+    }
+
+    fetchMyAPI();
+  }, []);
+
+  const updateQtyCart = (data, qty = null) => {
+    let index = listCart.findIndex((item) => item.id === data.id);
+    let updateCart = [...listCart];
+    if (qty === null) {
+      updateCart[index]["qty"] += 1;
+    } else {
+      updateCart[index]["qty"] = Number(qty);
+      if (Number(updateCart[index]["qty"]) > 0) {
+        updateCart[index]["qty"] = Number(qty);
+      } else {
+        updateCart.splice(index, 1);
+      }
+    }
+
+    // if (method === "plus") {
+    //   updateCart[index]["qty"] += 1;
+    // } else if (method === "minus") {
+    //   // if (Number(updateCart[index]["qty"]) > 0) {
+    //   updateCart[index]["qty"] -= 1;
+    //   // } else {
+    //   // updateCart.splice(index, 1);
+    //   // }
+    // }
+    setListCart(updateCart);
+  };
+
+  const addToCart = (data) => {
+    if (listCart.filter((cart) => cart.id === data.id).length) {
+      updateQtyCart(data);
+    } else {
+      let newData = {
+        id: data.id,
+        qty: 1,
+        name: data.name,
+        picture: data.pictureUrl,
+        price: data.price,
+      };
+      setListCart((listCart) => [...listCart, newData]);
+    }
+  };
 
   return (
     <div className="row mr-0 ml-0">
@@ -13,10 +94,10 @@ function Home() {
         <div className="col-9 pr-0">
           <div className="text-center pt-5 mt-5">
             <img src="assets/images/approve.svg" width="300" alt="" />
-            <p class="mt-4">Apakah pesananmu sudah sesuai ?</p>
+            <p className="mt-4">Apakah pesananmu sudah sesuai ?</p>
             <div className="d-flex justify-content-center">
               <button
-                class="btn btn-secondary mr-2 btn-lg"
+                className="btn btn-secondary mr-2 btn-lg"
                 style={{ width: "200px" }}
                 onClick={() => setIsBayar(false)}
               >
@@ -24,7 +105,7 @@ function Home() {
               </button>
               <Link
                 to="/checkout"
-                class="btn btn-primary btn-lg"
+                className="btn btn-primary btn-lg"
                 style={{ width: "200px" }}
               >
                 SUDAH
@@ -38,14 +119,14 @@ function Home() {
             <div className="row">
               <div className="col-9">
                 <input
-                  class="form-control"
+                  className="form-control"
                   type="text"
                   name="cari"
                   placeholder="Mau makan apa hari ini ?"
                 />
               </div>
             </div>
-            <div class="row mt-4 rounded">
+            <div className="row mt-4 rounded">
               <div className="col-12">
                 <Carousel
                   autoPlay={true}
@@ -72,42 +153,26 @@ function Home() {
               </div>
             </div>
             <div className="row mt-4">
-              <Product
-                src="https://awsimages.detik.net.id/community/media/visual/2021/03/29/trik-masak-nasi-goreng-3.jpeg?w=700&q=90"
-                name="Nasi Goreng"
-                description="Dimasak dengan bumbu rahasia"
-                price="30.000"
-              />
-              <Product
-                src="https://media-cdn.tripadvisor.com/media/photo-s/0e/08/51/46/beef-steak-srikandi-restaurant.jpg"
-                name="Beef Steak"
-                description="Dimasak dengan bumbu rahasia"
-                price="30.000"
-              />
-              <Product
-                src="http://kbu-cdn.com/dk/wp-content/uploads/beef-burger-special.jpg"
-                name="Beef Burger"
-                description="Dimasak dengan bumbu rahasia"
-                price="30.000"
-              />
-              <Product
-                src="http://kbu-cdn.com/dk/wp-content/uploads/spaghetti-poll-pedas.jpg"
-                name="Spaghetti"
-                description="Dimasak dengan bumbu rahasia"
-                price="30.000"
-              />
-              <Product
-                src="https://selerasa.com/wp-content/uploads/2015/07/images_mancanegara_Resep_Kebab_00-1200x752.jpg"
-                name="Kebab"
-                description="Dimasak dengan bumbu rahasia"
-                price="30.000"
-              />
-              <Product
-                src="https://asset.kompas.com/crops/DWJqRl2S_A0XNgQT8_9ruHPq83Q=/0x0:1000x667/750x500/data/photo/2020/12/25/5fe576d8a9d24.jpg"
-                name="Pizza"
-                description="Dimasak dengan bumbu rahasia"
-                price="30.000"
-              />
+              {isLoading ? (
+                <div>
+                  <ProductSkeleton />
+                </div>
+              ) : (
+                listProduct.map((data) => (
+                  <div
+                    className="col-4"
+                    key={data.id}
+                    onClick={() => addToCart(data)}
+                  >
+                    <Product
+                      url={data.pictureUrl}
+                      name={data.name}
+                      description={data.descriptionShort}
+                      price={data.price}
+                    />
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>
@@ -119,12 +184,11 @@ function Home() {
             <img src="assets/images/logo.png" alt="Logo" width="150" />
           </div>
           <h5 className="mt-4 mb-4">Pesanan Saya</h5>
-          <CartProduct
-            src="https://asset.kompas.com/crops/DWJqRl2S_A0XNgQT8_9ruHPq83Q=/0x0:1000x667/750x500/data/photo/2020/12/25/5fe576d8a9d24.jpg"
-            name="Pizza"
-            price="40.000"
-            qty="10"
-          />
+          <FlipMove>
+            {listCart.map((data) => (
+              <FunctionalCart key={data.id} {...data} />
+            ))}
+          </FlipMove>
           <div className="border-top pt-3 mt-5">
             <div className="d-flex justify-content-between">
               <label>T O T A L</label>

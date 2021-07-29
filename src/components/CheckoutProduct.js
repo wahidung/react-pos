@@ -4,7 +4,7 @@ function CheckoutProduct({ src, name, price, qty }) {
   return (
     <div class="row mb-3">
       <div className="col-4">
-        <img class="checkout-image" src={src} />
+        <img class="checkout-image" src={src} alt="" />
       </div>
       <div className="col-8 pl-0">
         <h6>{name}</h6>
