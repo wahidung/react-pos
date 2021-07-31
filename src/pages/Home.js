@@ -8,11 +8,16 @@ import axios from "axios";
 import { URL, KEY } from "../config/db";
 import ProductSkeleton from "../components/ProductSkeleton";
 import FlipMove from "react-flip-move";
+import NumberFormat from "react-number-format";
+import { useRecoilState } from "recoil";
+import { cartState } from "../store/index";
+
 function Home() {
   const [isBayar, setIsBayar] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [listProduct, setListProduct] = useState([]);
-  const [listCart, setListCart] = useState([]);
+  const [listCart, setListCart] = useRecoilState(cartState);
+  const [total, setTotal] = useState(0);
 
   const FunctionalCart = forwardRef((data, ref) => (
     <div ref={ref}>
@@ -49,7 +54,7 @@ function Home() {
 
   const updateQtyCart = (data, qty = null) => {
     let index = listCart.findIndex((item) => item.id === data.id);
-    let updateCart = [...listCart];
+    let updateCart = JSON.parse(JSON.stringify(listCart));
     if (qty === null) {
       updateCart[index]["qty"] += 1;
     } else {
@@ -60,16 +65,6 @@ function Home() {
         updateCart.splice(index, 1);
       }
     }
-
-    // if (method === "plus") {
-    //   updateCart[index]["qty"] += 1;
-    // } else if (method === "minus") {
-    //   // if (Number(updateCart[index]["qty"]) > 0) {
-    //   updateCart[index]["qty"] -= 1;
-    //   // } else {
-    //   // updateCart.splice(index, 1);
-    //   // }
-    // }
     setListCart(updateCart);
   };
 
@@ -83,10 +78,21 @@ function Home() {
         name: data.name,
         picture: data.pictureUrl,
         price: data.price,
+        writable: true,
       };
       setListCart((listCart) => [...listCart, newData]);
     }
   };
+
+  useEffect(() => {
+    if (listCart.length !== 0) {
+      const sum = listCart.map((cart) => cart.price * cart.qty);
+      setTotal(sum.reduce((acc, sum) => acc + sum));
+    } else {
+      setIsBayar(false);
+      setTotal(0);
+    }
+  }, [listCart]);
 
   return (
     <div className="row mr-0 ml-0">
@@ -183,28 +189,47 @@ function Home() {
           <div className="text-center mt-3 pb-4 border-bottom">
             <img src="assets/images/logo.png" alt="Logo" width="150" />
           </div>
-          <h5 className="mt-4 mb-4">Pesanan Saya</h5>
-          <FlipMove>
-            {listCart.map((data) => (
-              <FunctionalCart key={data.id} {...data} />
-            ))}
-          </FlipMove>
-          <div className="border-top pt-3 mt-5">
-            <div className="d-flex justify-content-between">
-              <label>T O T A L</label>
-              <label>
-                <b>Rp 40.000</b>
-              </label>
+          {listCart.length === 0 ? (
+            <div className="text-center mt-5 pt-5" style={{ opacity: 0.3 }}>
+              <img src="assets/images/empty-cart.svg" alt="" width="100" />
+              <p className="text-center mt-3 mb-0">Keranjangmu masih kosong</p>
+              <p className="text-center">
+                <small>Silahkan pilih produk terlebih dahulu</small>
+              </p>
             </div>
-            {isBayar === false && (
-              <button
-                className="btn btn-primary btn-block btn-lg"
-                onClick={() => setIsBayar(true)}
-              >
-                BAYAR
-              </button>
-            )}
-          </div>
+          ) : (
+            <div>
+              <h5 className="mt-4 mb-4">Pesanan Saya</h5>
+              <FlipMove>
+                {listCart.map((data) => (
+                  <FunctionalCart key={data.id} {...data} />
+                ))}
+              </FlipMove>
+              <div className="border-top pt-3 mt-5">
+                <div className="d-flex justify-content-between">
+                  <label>T O T A L</label>
+                  <label>
+                    <b>
+                      <NumberFormat
+                        value={total}
+                        displayType={"text"}
+                        thousandSeparator={true}
+                        prefix={"Rp "}
+                      />
+                    </b>
+                  </label>
+                </div>
+                {isBayar === false && (
+                  <button
+                    className="btn btn-primary btn-block btn-lg"
+                    onClick={() => setIsBayar(true)}
+                  >
+                    BAYAR
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

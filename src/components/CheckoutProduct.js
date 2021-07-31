@@ -1,4 +1,5 @@
 import React from "react";
+import NumberFormat from "react-number-format";
 
 function CheckoutProduct({ src, name, price, qty }) {
   return (
@@ -15,7 +16,14 @@ function CheckoutProduct({ src, name, price, qty }) {
             </label>
           </div>
           <div className="d-block text-right mt-3">
-            <b>Rp {price}</b>
+            <b>
+              <NumberFormat
+                value={price * qty}
+                displayType={"text"}
+                thousandSeparator={true}
+                prefix={"Rp "}
+              />
+            </b>
           </div>
         </div>
       </div>
