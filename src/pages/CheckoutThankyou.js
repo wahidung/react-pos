@@ -41,7 +41,7 @@ function CheckoutThankyou() {
     }
 
     fetchMyAPI();
-  }, [id]);
+  }, [id, isPaid]);
 
   return (
     <div className="bg-header" style={{ minHeight: "100vh" }}>
