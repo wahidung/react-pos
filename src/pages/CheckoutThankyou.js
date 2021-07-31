@@ -5,6 +5,7 @@ import { URL, KEY } from "../config/db";
 function CheckoutThankyou() {
   const { id } = useParams();
   const [isPaid, setIsPaid] = useState(false);
+  const [invoice, setInvoice] = useState("");
 
   useEffect(() => {
     async function fetchMyAPI() {
@@ -18,29 +19,29 @@ function CheckoutThankyou() {
 
       if (res.status === 200) {
         setIsPaid(res.data.nodes[0].isPaid);
+        setInvoice(res.data.nodes[0].name);
+        if (!res.data.nodes[0].isPaid) {
+          setInterval(() => {
+            axios
+              .get(URL + `byId/rows?id=` + id, {
+                headers: {
+                  "content-type": "application/json",
+                  "x-api-key": KEY,
+                  "cache-control": "no-cache",
+                },
+              })
+              .then((res) => {
+                if (res.status === 200) {
+                  setIsPaid(res.data.nodes[0].isPaid);
+                }
+              });
+          }, 1000);
+        }
       }
     }
 
     fetchMyAPI();
   }, [id]);
-
-  useEffect(() => {
-    async function fetchMyAPI() {
-      let res = await axios.get(URL + `byId/rows?id=` + id, {
-        headers: {
-          "content-type": "application/json",
-          "x-api-key": KEY,
-          "cache-control": "no-cache",
-        },
-      });
-
-      if (res.status === 200) {
-        setIsPaid(res.data.nodes[0].isPaid);
-      }
-    }
-
-    fetchMyAPI();
-  });
 
   return (
     <div className="bg-header" style={{ minHeight: "100vh" }}>
@@ -82,8 +83,9 @@ function CheckoutThankyou() {
                           id
                         }
                         alt="qr"
-                        width="100"
+                        width="150"
                       />
+                      <h5>{invoice}</h5>
                     </div>
                   </div>
                 )}
