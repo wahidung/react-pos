@@ -18,7 +18,7 @@ function Checkout() {
   useEffect(() => {
     const sum = listCart.map((cart) => cart.price * cart.qty);
     setSubTotal(sum.reduce((acc, sum) => acc + sum));
-  }, []);
+  }, [listCart]);
 
   useEffect(() => {
     let theFee = 0;
@@ -39,7 +39,7 @@ function Checkout() {
 
     setFee(theFee);
     setTotal(subTotal + theFee);
-  }, [payment]);
+  }, [payment, subTotal]);
 
   const handleCheckout = () => {
     const today = new Date();

@@ -22,7 +22,7 @@ function CheckoutThankyou() {
     }
 
     fetchMyAPI();
-  }, []);
+  }, [id]);
 
   return (
     <div className="bg-header" style={{ minHeight: "100vh" }}>
@@ -40,7 +40,11 @@ function CheckoutThankyou() {
                   <div>
                     <h3>Terimakasih</h3>
                     <p className="mb-3">Pembayaran telah kami terima</p>
-                    <img src="../assets/images/check-circle.gif" width="100" />
+                    <img
+                      src="../assets/images/check-circle.gif"
+                      width="100"
+                      alt="success"
+                    />
                     <br></br>
                     <Link to="/" class="btn btn-primary mt-5">
                       Kembali ke Home
@@ -56,6 +60,7 @@ function CheckoutThankyou() {
                       </p>
                       <img
                         src="../assets/images/circles-wait.gif"
+                        alt="wait"
                         width="100"
                       />
                     </div>
