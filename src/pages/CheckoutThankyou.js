@@ -20,22 +20,23 @@ function CheckoutThankyou() {
       if (res.status === 200) {
         setIsPaid(res.data.nodes[0].isPaid);
         setInvoice(res.data.nodes[0].name);
-        if (!isPaid) {
-          setInterval(() => {
-            axios
-              .get(URL + `byId/rows?id=` + id, {
-                headers: {
-                  "content-type": "application/json",
-                  "x-api-key": KEY,
-                  "cache-control": "no-cache",
-                },
-              })
-              .then((res) => {
-                if (res.status === 200) {
-                  setIsPaid(res.data.nodes[0].isPaid);
-                }
-              });
-          }, 1000);
+        let interval = setInterval(() => {
+          axios
+            .get(URL + `byId/rows?id=` + id, {
+              headers: {
+                "content-type": "application/json",
+                "x-api-key": KEY,
+                "cache-control": "no-cache",
+              },
+            })
+            .then((res) => {
+              if (res.status === 200) {
+                setIsPaid(res.data.nodes[0].isPaid);
+              }
+            });
+        }, 1000);
+        if (isPaid) {
+          clearInterval(interval);
         }
       }
     }
