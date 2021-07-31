@@ -24,6 +24,24 @@ function CheckoutThankyou() {
     fetchMyAPI();
   }, [id]);
 
+  useEffect(() => {
+    async function fetchMyAPI() {
+      let res = await axios.get(URL + `byId/rows?id=` + id, {
+        headers: {
+          "content-type": "application/json",
+          "x-api-key": KEY,
+          "cache-control": "no-cache",
+        },
+      });
+
+      if (res.status === 200) {
+        setIsPaid(res.data.nodes[0].isPaid);
+      }
+    }
+
+    fetchMyAPI();
+  });
+
   return (
     <div className="bg-header" style={{ minHeight: "100vh" }}>
       <div className="row mr-0 ml-0">
@@ -59,8 +77,11 @@ function CheckoutThankyou() {
                         anda
                       </p>
                       <img
-                        src="../assets/images/circles-wait.gif"
-                        alt="wait"
+                        src={
+                          `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://react-pos-whd.netlify.app/pay/` +
+                          id
+                        }
+                        alt="qr"
                         width="100"
                       />
                     </div>
