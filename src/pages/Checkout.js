@@ -2,7 +2,10 @@ import React, { useEffect, useState } from "react";
 import CheckoutProduct from "../components/CheckoutProduct";
 import { useRecoilState } from "recoil";
 import { cartState } from "../store/index";
+import { URL, KEY } from "../config/db";
 import NumberFormat from "react-number-format";
+import axios from "axios";
+import { Redirect } from "react-router-dom";
 
 function Checkout() {
   const [payment, setPayment] = useState("CASH");
@@ -10,6 +13,7 @@ function Checkout() {
   const [total, setTotal] = useState(0);
   const [listCart, setListCart] = useRecoilState(cartState);
   const [fee, setFee] = useState(0);
+  const [resId, setResId] = useState("");
 
   useEffect(() => {
     const sum = listCart.map((cart) => cart.price * cart.qty);
@@ -36,6 +40,44 @@ function Checkout() {
     setFee(theFee);
     setTotal(subTotal + theFee);
   }, [payment]);
+
+  const handleCheckout = () => {
+    const today = new Date();
+    const time = today.getHours() + ":" + today.getMinutes() + ":" + today;
+    const data = {
+      name: "INVOICE-" + (Math.floor(Math.random() * 100000) + 1),
+      description: time,
+    };
+
+    if (payment === "CASH") {
+      data["isPaid"] = true;
+    }
+
+    async function postCheckout() {
+      let res = await axios.post(
+        URL + `allTransaction/rows`,
+        JSON.stringify(data),
+        {
+          headers: {
+            "content-type": "application/json",
+            "x-api-key": KEY,
+            "cache-control": "no-cache",
+          },
+        }
+      );
+
+      if (res.status === 200) {
+        setResId(res.data.id);
+        setListCart([]);
+      }
+    }
+
+    postCheckout();
+  };
+
+  if (resId !== "") {
+    return <Redirect to={`/checkout/` + resId} />;
+  }
 
   return (
     <div className="bg-header" style={{ minHeight: "100vh" }}>
@@ -146,7 +188,11 @@ function Checkout() {
                     />
                   </h5>
                 </div>
-                <button class="mt-4 pt-3 pb-3 btn btn-primary btn-block btn-lg">
+                <button
+                  type="button"
+                  onClick={handleCheckout}
+                  className="mt-4 pt-3 pb-3 btn btn-primary btn-block btn-lg"
+                >
                   Bayar Sekarang
                 </button>
               </div>
