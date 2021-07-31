@@ -20,7 +20,7 @@ function CheckoutThankyou() {
       if (res.status === 200) {
         setIsPaid(res.data.nodes[0].isPaid);
         setInvoice(res.data.nodes[0].name);
-        if (!res.data.nodes[0].isPaid) {
+        if (!isPaid) {
           setInterval(() => {
             axios
               .get(URL + `byId/rows?id=` + id, {
